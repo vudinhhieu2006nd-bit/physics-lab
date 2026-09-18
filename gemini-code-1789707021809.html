@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Lab – Khám Phá Vật Lí THPT</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .nav-brand {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 15px;
+            transition: var(--transition);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-dark);
+            background-color: rgba(14, 165, 233, 0.1);
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
+            margin-bottom: 30px;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero p {
+            font-size: 17px;
+            max-width: 800px;
+            margin: 0 auto;
+            opacity: 0.95;
+        }
+
+        /* --- CONTAINER & VIEWS --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 50px 20px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08);
+        }
+
+        .card h3 {
+            font-size: 20px;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            text-align: center;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* --- SIMULATION & SECTIONS --- */
+        .section-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .simulation-container {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-color: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .simulation-container iframe, 
+        .simulation-container video,
+        .simulation-container img {
+            width: 100%;
+            height: 100%;
+            border: none;
+            object-fit: cover;
+        }
+
+        .placeholder-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #cbd5e1;
+            text-align: center;
+            padding: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- CONTENT BOXES --- */
+        .content-box {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .guide-box {
+            background-color: #f0f9ff;
+            border-left: 4px solid var(--primary);
+        }
+
+        .objective-box {
+            background-color: #fffbeb;
+            border-left: 4px solid var(--warning);
+        }
+
+        .objective-box ul {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+
+        .objective-box li {
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: var(--text-main);
+        }
+
+        /* --- QUESTIONS & HINTS --- */
+        .question-item {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .btn-hint {
+            background-color: transparent;
+            color: var(--primary-dark);
+            border: 1px solid var(--primary);
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-hint:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .hint-content {
+            margin-top: 12px;
+            padding: 12px;
+            background: #ffffff;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary);
+            font-size: 14px;
+            color: var(--text-muted);
+            display: none;
+        }
+
+        .hint-content.active {
+            display: block;
+        }
+
+        .drive-guide {
+            background: #f8fafc;
+            border: 1px dashed var(--secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .drive-guide h4 { margin-bottom: 8px; color: var(--text-main); }
+        .drive-guide ol { padding-left: 20px; color: var(--text-muted); }
+
+        /* --- BACK TO TOP --- */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--primary);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            transition: var(--transition);
+            opacity: 0;
+            visibility: hidden;
+            z-index: 999;
+            border: none;
+        }
+        .back-to-top.show { opacity: 1; visibility: visible; }
+        .back-to-top:hover { background: var(--primary-dark); transform: translateY(-3px); }
+
+        /* --- FOOTER --- */
+        footer {
+            background: #1e293b;
+            color: #94a3b8;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: auto;
+            font-size: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+        footer p { margin-bottom: 5px; color: #f8fafc; font-weight: 600; }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: white;
+                padding: 20px;
+                box-shadow: 0 10px 10px rgba(0,0,0,0.05);
+                border-bottom: 1px solid var(--border-color);
+            }
+            .nav-menu.active { display: flex; }
+            .hamburger { display: block; }
+            .hero h1 { font-size: 24px; }
+            .hero p { font-size: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a onclick="switchView('home')" class="nav-brand">Physics Lab</a>
+            <button class="hamburger">☰</button>
+            <ul class="nav-menu">
+                <li><a onclick="switchView('home')" class="nav-link" data-target="home">Trang chủ</a></li>
+                <li><a onclick="switchView('conlac')" class="nav-link" data-target="conlac">Con lắc lò xo</a></li>
+                <li><a onclick="switchView('songdoc')" class="nav-link" data-target="songdoc">Sóng dọc</a></li>
+                <li><a onclick="switchView('online')" class="nav-link" data-target="online">Mô phỏng trực tuyến</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ==================== TRANG CHỦ ==================== -->
+    <div id="view-home" class="view active">
+        <section class="hero">
+            <h1>KHÁM PHÁ VẬT LÍ BẰNG MÔ PHỎNG</h1>
+            <p>Website cung cấp các mô phỏng trực quan giúp học sinh quan sát, tương tác, hình thành giả thuyết và rút ra kiến thức Vật lí.</p>
+        </section>
+        <main class="container" style="padding-top: 0;">
+            <h2 class="section-title">🧭 Chủ đề Mô phỏng Nổi bật</h2>
+            <div class="cards-grid">
+                <div class="card">
+                    <div>
+                        <h3>Con Lắc Lò Xo</h3>
+                        <p>Dao động điều hòa, khảo sát sự phụ thuộc của chu kỳ vào khối lượng và độ cứng.</p>
+                    </div>
+                    <button class="btn" onclick="switchView('conlac')">KHÁM PHÁ →</button>
+                </div>
+                <div class="card">
+                    <div>
+                        <h3>Sóng Dọc</h3>
+                        <p>Sự lan truyền của nén và giãn, trực quan hóa dao động phần tử môi trường.</p>
+                    </div>
+                    <button class="btn" onclick="switchView('songdoc')">KHÁM PHÁ →</button>
+                </div>
+                <div class="card">
+                    <div>
+                        <h3>Mô Phỏng Trực Tuyến</h3>
+                        <p>Khám phá thêm các hiện tượng vật lí trực quan thông qua công cụ nhúng mở rộng.</p>
+                    </div>
+                    <button class="btn" onclick="switchView('online')">KHÁM PHÁ →</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== TRANG 1: CON LẮC LÒ XO ==================== -->
+    <div id="view-conlac" class="view">
+        <section class="hero" style="padding: 40px 20px;">
+            <h1>CON LẮC LÒ XO – DAO ĐỘNG ĐIỀU HÒA</h1>
+            <p>Quan sát chuyển động của vật gắn với lò xo và mối liên hệ giữa chuyển động thực với đồ thị li độ theo thời gian.</p>
+        </section>
+        <main class="container">
+            <h2 class="section-title">🔬 Khu vực Mô phỏng</h2>
+            <div class="simulation-container" id="embed-con-lac-lo-xo">
+                <div class="placeholder-text">[ DÁN LINK MÔ PHỎNG CON LẮC LÒ XO TẠI ĐÂY ]</div>
+            </div>
+
+            <div class="content-box guide-box">
+                <h3 style="color: var(--primary-dark); margin-bottom: 8px;">🧭 KHÁM PHÁ</h3>
+                <p>Hãy thay đổi các thông số của con lắc và quan sát sự thay đổi của chuyển động và đồ thị.</p>
+            </div>
+
+            <div class="content-box">
+                <h3 class="section-title" style="font-size: 18px; margin-bottom: 20px;">❓ Câu hỏi Định hướng Thảo luận</h3>
+                <div class="question-item">
+                    <div class="question-text">Câu 1: “Khi tăng biên độ dao động nhưng giữ nguyên khối lượng và độ cứng của lò xo, chu kỳ dao động thay đổi như thế nào?”</div>
+                    <button class="btn-hint">HIỂN THỊ GỢI Ý</button>
+                    <div class="hint-content">Hãy quan sát đồng hồ đo thời gian hoặc đếm số dao động thực hiện trong một khoảng thời gian cố định khi thay đổi biên độ A.</div>
+                </div>
+                <div class="question-item">
+                    <div class="question-text">Câu 2: “Khi tăng khối lượng của vật, đồ thị x(t) thay đổi như thế nào?”</div>
+                    <button class="btn-hint">HIỂN THỊ GỢI Ý</button>
+                    <div class="hint-content">So sánh độ dãn của các đỉnh sóng trên đồ thị li độ theo thời gian t khi tăng khối lượng m.</div>
+                </div>
+                <div class="question-item">
+                    <div class="question-text">Câu 3: “Dựa vào đồ thị x(t), làm thế nào xác định được chu kỳ và biên độ dao động?”</div>
+                    <button class="btn-hint">HIỂN THỊ GỢI Ý</button>
+                    <div class="hint-content">Biên độ A là giá trị cực đại trên trục tung, chu kỳ T là khoảng thời gian giữa hai lần đồ thị lặp lại trạng thái cũ.</div>
+                </div>
+            </div>
+
+            <div class="content-box objective-box">
+                <h3 style="color: #b45309; font-size: 18px;">🎯 MỤC TIÊU NĂNG LỰC</h3>
+                <ul>
+                    <li><b>Năng lực nhận thức vật lí:</b> mô tả được đặc điểm của dao động điều hòa thông qua mô hình và đồ thị.</li>
+                    <li><b>Năng lực tìm hiểu tự nhiên dưới góc độ vật lí:</b> khai thác mô phỏng, thay đổi tham số và thu thập bằng chứng.</li>
+                    <li><b>Năng lực giải quyết vấn đề:</b> phân tích sự phụ thuộc của chu kỳ vào khối lượng và độ cứng lò xo.</li>
+                </ul>
+            </div>
+
+            <div class="drive-guide">
+                <h4>💡 CÁCH THÊM NỘI DUNG (GOOGLE DRIVE / FILE HTML)</h4>
+                <ol>
+                    <li>Tải file mô phỏng HTML, video MP4 hoặc GIF lên Google Drive.</li>
+                    <li>Thiết lập chia sẻ quyền truy cập công khai ("Bất kỳ ai có đường liên kết").</li>
+                    <li>Sao chép liên kết và dán vào biến <code>conLacLoXo</code> trong phần mã nguồn JavaScript bên dưới.</li>
+                </ol>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== TRANG 2: SÓNG DỌC ==================== -->
+    <div id="view-songdoc" class="view">
+        <section class="hero" style="padding: 40px 20px;">
+            <h1>SÓNG DỌC LAN TRUYỀN</h1>
+            <p>Quan sát sự dao động của các phần tử môi trường và sự lan truyền của vùng nén – giãn.</p>
+        </section>
+        <main class="container">
+            <h2 class="section-title">🔬 Khu vực Mô phỏng Sóng Dọc</h2>
+            <div class="simulation-container" id="embed-song-doc">
+                <div class="placeholder-text">[ DÁN LINK MÔ PHỎNG SÓNG DỌC TẠI ĐÂY ]</div>
+            </div>
+
+            <div class="content-box guide-box">
+                <h3 style="color: var(--primary-dark); margin-bottom: 8px;">👀 QUAN SÁT</h3>
+                <p>Hãy theo dõi các phần tử môi trường và đặc biệt chú ý đến sự hình thành, chuyển động và biến mất của các vùng NÉN – GIÃN.</p>
+            </div>
+
+            <div class="content-box">
+                <h3 class="section-title" style="font-size: 18px; margin-bottom: 20px;">❓ Câu hỏi Định hướng Thảo luận</h3>
+                <div class="question-item">
+                    <div class="question-text">Câu 1: “Các phần tử môi trường có truyền đi theo sóng hay chỉ dao động quanh vị trí cân bằng?”</div>
+                    <button class="btn-hint">HIỂN THỊ GỢI Ý</button>
+                    <div class="hint-content">Quan sát một hạt đơn lẻ trong môi trường khi sóng đi qua, xem hạt đó có dịch chuyển về phía trước hay dao động tại chỗ.</div>
+                </div>
+                <div class="question-item">
+                    <div class="question-text">Câu 2: “Vùng NÉN và GIÃN có đứng yên tại một vị trí hay lan truyền theo thời gian?”</div>
+                    <button class="btn-hint">HIỂN THỊ GỢI Ý</button>
+                    <div class="hint-content">Theo dõi vạch màu đánh dấu vùng NÉN/GIÃN để thấy hướng dịch chuyển của chúng dọc theo phương truyền sóng.</div>
+                </div>
+                <div class="question-item">
+                    <div class="question-text">Câu 3: “Phương dao động của các phần tử có quan hệ như thế nào với phương truyền sóng?”</div>
+                    <button class="btn-hint">HIỂN THỊ GỢI Ý</button>
+                    <div class="hint-content">So sánh hướng dao động của hạt với mũi tên chỉ phương truyền sóng.</div>
+                </div>
+            </div>
+
+            <div class="content-box objective-box">
+                <h3 style="color: #b45309; font-size: 18px;">🎯 MỤC TIÊU NĂNG LỰC</h3>
+                <ul>
+                    <li><b>Năng lực nhận thức vật lí:</b> mô tả được đặc điểm của sóng dọc và sự lan truyền của trạng thái nén – giãn.</li>
+                    <li><b>Năng lực tìm hiểu tự nhiên dưới góc độ vật lí:</b> quan sát, khai thác và phân tích mô phỏng.</li>
+                    <li><b>Năng lực giao tiếp và hợp tác:</b> thảo luận, giải thích hiện tượng dựa trên quan sát mô phỏng.</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== TRANG 3: MÔ PHỎNG TRỰC TUYẾN ==================== -->
+    <div id="view-online" class="view">
+        <section class="hero" style="padding: 40px 20px;">
+            <h1>KHÁM PHÁ MÔ PHỎNG VẬT LÍ TRỰC TUYẾN</h1>
+            <p>Khám phá thêm các mô phỏng tương tác để nghiên cứu các hiện tượng Vật lí.</p>
+        </section>
+        <main class="container">
+            <h2 class="section-title">🌐 Khung Mô Phỏng Trực Tuyến</h2>
+            <div class="simulation-container" id="embed-online-sim">
+                <div class="placeholder-text">
+                    Nguồn mô phỏng không cho phép nhúng trực tiếp.<br>
+                    <a href="#" id="external-link" target="_blank" class="btn" style="margin-top: 15px; display: inline-block;">MỞ MÔ PHỎNG ↗</a>
+                </div>
+            </div>
+
+            <div class="content-box">
+                <h3 style="color: var(--primary-dark); margin-bottom: 15px;">📋 Thông tin Nguồn & Mô phỏng</h3>
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
+                    <li><b>Tên mô phỏng:</b> [ Khảo sát hiện tượng dao động / sóng ]</li>
+                    <li><b>Chủ đề:</b> Dao động và Sóng cơ</li>
+                    <li><b>Đối tượng sử dụng:</b> Học sinh THPT</li>
+                    <li><b>Nguồn:</b> Nền tảng mô phỏng mở (PhET / Thí nghiệm ảo)</li>
+                </ul>
+            </div>
+
+            <div class="content-box">
+                <h3 class="section-title" style="font-size: 18px; margin-bottom: 20px;">❓ Câu hỏi Hướng dẫn Khám phá</h3>
+                <div class="question-item">
+                    <div class="question-text">1. “Hiện tượng vật lí nào đang được mô phỏng?”</div>
+                    <button class="btn-hint">HIỂN THỊ GỢI Ý</button>
+                    <div class="hint-content">Quan sát giao diện tổng quan và nhận diện các đại lượng đặc trưng của hiện tượng.</div>
+                </div>
+                <div class="question-item">
+                    <div class="question-text">2. “Những đại lượng nào có thể thay đổi trong mô phỏng?”</div>
+                    <button class="btn-hint">HIỂN THỊ GỢI Ý</button>
+                    <div class="hint-content">Tìm các thanh trượt (slider) hoặc nút điều chỉnh giá trị trên màn hình mô phỏng.</div>
+                </div>
+                <div class="question-item">
+                    <div class="question-text">3. “Khi thay đổi một đại lượng, kết quả quan sát được thay đổi như thế nào?”</div>
+                    <button class="btn-hint">HIỂN THỊ GỢI Ý</button>
+                    <div class="hint-content">Thực hiện thay đổi từng thông số độc lập và ghi nhận sự biến đổi của kết quả hiển thị.</div>
+                </div>
+            </div>
+
+            <div class="content-box objective-box">
+                <h3 style="color: #b45309; font-size: 18px;">🎯 MỤC TIÊU NĂNG LỰC</h3>
+                <ul>
+                    <li><b>Năng lực nhận thức vật lí:</b> nhận biết và giải thích hiện tượng thông qua mô phỏng.</li>
+                    <li><b>Năng lực tìm hiểu tự nhiên dưới góc độ vật lí:</b> thực hiện quan sát, thay đổi biến số và rút ra nhận xét.</li>
+                    <li><b>Năng lực giải quyết vấn đề:</b> sử dụng bằng chứng từ mô phỏng để giải thích kết quả.</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- BACK TO TOP -->
+    <button id="backToTop" class="back-to-top">↑</button>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>PHYSICS LAB – Mô phỏng và khám phá Vật lí THPT</p>
+        <p>Thiết kế phục vụ hoạt động học tập Vật lí</p>
+        <small>© 2026 Physics Lab</small>
+    </footer>
+
+    <!-- ==================== JAVASCRIPT ĐIỀU KHIỂN & CẤU HÌNH ==================== -->
+    <script>
+        // CẤU HÌNH LINK MÔ PHỎNG (THAY LINK THẬT TẠI ĐÂY KHI CẦN)
+        const CONFIG = {
+            conLacLoXo: "DAN_LINK_MO_PHONG_CON_LAC_LO_XO",
+            songDoc: "DAN_LINK_MO_PHONG_SONG_DOC",
+            onlineSimulation: "ONLINE_SIMULATION_URL"
+        };
+
+        // Chuyển đổi giữa các trang (SPA View Router)
+        function switchView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + viewName).classList.add('active');
+
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            const activeLink = document.querySelector(`.nav-link[data-target="${viewName}"]`);
+            if (activeLink) activeLink.classList.add('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Đóng menu mobile nếu đang mở
+            const navMenu = document.querySelector(".nav-menu");
+            const hamburger = document.querySelector(".hamburger");
+            if (navMenu.classList.contains("active")) {
+                navMenu.classList.remove("active");
+                hamburger.textContent = "☰";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Mobile Menu Toggle
+            const hamburger = document.querySelector(".hamburger");
+            const navMenu = document.querySelector(".nav-menu");
+
+            if (hamburger && navMenu) {
+                hamburger.addEventListener("click", () => {
+                    navMenu.classList.toggle("active");
+                    hamburger.textContent = navMenu.classList.contains("active") ? "✕" : "☰";
+                });
+            }
+
+            // Toggle Hints for Questions
+            document.querySelectorAll(".btn-hint").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const hintBox = btn.nextElementSibling;
+                    if (hintBox && hintBox.classList.contains("hint-content")) {
+                        hintBox.classList.toggle("active");
+                        btn.textContent = hintBox.classList.contains("active") ? "Ẩn gợi ý" : "HIỂN THỊ GỢI Ý";
+                    }
+                });
+            });
+
+            // Back to Top Button Logic
+            const backToTopBtn = document.getElementById("backToTop");
+            if (backToTopBtn) {
+                window.addEventListener("scroll", () => {
+                    if (window.scrollY > 300) {
+                        backToTopBtn.classList.add("show");
+                    } else {
+                        backToTopBtn.classList.remove("show");
+                    }
+                });
+
+                backToTopBtn.addEventListener("click", () => {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                });
+            }
+
+            // Xử lý embed động nếu có link thật
+            setupDynamicEmbeds();
+        });
+
+        function setupDynamicEmbeds() {
+            const elLoXo = document.getElementById("embed-con-lac-lo-xo");
+            if (elLoXo && CONFIG.conLacLoXo && CONFIG.conLacLoXo !== "DAN_LINK_MO_PHONG_CON_LAC_LO_XO") {
+                renderEmbedContent(elLoXo, CONFIG.conLacLoXo);
+            }
+
+            const elSongDoc = document.getElementById("embed-song-doc");
+            if (elSongDoc && CONFIG.songDoc && CONFIG.songDoc !== "DAN_LINK_MO_PHONG_SONG_DOC") {
+                renderEmbedContent(elSongDoc, CONFIG.songDoc);
+            }
+
+            const elOnline = document.getElementById("embed-online-sim");
+            const extLink = document.getElementById("external-link");
+            if (CONFIG.onlineSimulation && CONFIG.onlineSimulation !== "ONLINE_SIMULATION_URL") {
+                extLink.href = CONFIG.onlineSimulation;
+                renderEmbedContent(elOnline, CONFIG.onlineSimulation);
+            }
+        }
+
+        function renderEmbedContent(container, url) {
+            container.innerHTML = "";
+            if (url.endsWith(".mp4") || url.endsWith(".webm")) {
+                const video = document.createElement("video");
+                video.src = url;
+                video.controls = true;
+                container.appendChild(video);
+            } else if (url.endsWith(".gif") || url.endsWith(".png") || url.endsWith(".jpg")) {
+                const img = document.createElement("img");
+                img.src = url;
+                container.appendChild(img);
+            } else {
+                const iframe = document.createElement("iframe");
+                iframe.src = url;
+                iframe.allowFullscreen = true;
+                container.appendChild(iframe);
+            }
+        }
+    </script>
+</body>
+</html>
