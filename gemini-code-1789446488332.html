@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng Sóng Dọc Lan Truyền - UI Hiện đại (Dynamic Zones)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            color: var(--primary-dark);
+            font-weight: 800;
+            font-size: 28px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .app-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2.5fr 1fr;
+            gap: 20px;
+        }
+
+        /* --- CARDS --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+        }
+
+        /* --- CANVAS AREA --- */
+        .canvas-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        /* --- CONTROLS & SLIDERS --- */
+        .control-group {
+            margin-bottom: 18px;
+        }
+        
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .control-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+        
+        .control-value {
+            background: var(--primary);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            min-width: 65px;
+            text-align: center;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* --- BUTTONS --- */
+        .playback-controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 8px rgba(0,0,0,0.15); }
+        .btn:active { transform: translateY(0); }
+
+        .btn-play { background-color: var(--success); }
+        .btn-stop { background-color: var(--danger); }
+        .btn-reset { background-color: var(--secondary); }
+        
+        .mode-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn-mode {
+            flex: 1;
+            background-color: var(--bg-color);
+            color: var(--primary-dark);
+            border: 2px solid var(--primary);
+            box-shadow: none;
+            text-transform: none;
+            padding: 8px;
+        }
+        .btn-mode:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* --- METRICS DASHBOARD --- */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        .metric-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .metric-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        
+        .metric-number {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        /* --- THEORY & QUESTIONS --- */
+        .bottom-section {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .theory-box {
+            background-color: #ecfdf5;
+            border-left: 4px solid var(--success);
+        }
+
+        .question-box {
+            background-color: #fffbeb;
+            border-left: 4px solid var(--warning);
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+        .toggle-switch input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .formulas-text {
+            font-family: 'Courier New', Courier, monospace;
+            background: #1e293b;
+            color: #38bdf8;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .formulas-text span.white { color: #f8fafc; }
+
+        @media (max-width: 1024px) {
+            .app-container { grid-template-columns: 1fr; }
+            .bottom-section { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Mô phỏng Sóng Dọc Lan Truyền</h1>
+    </div>
+
+    <div class="app-container">
+        
+        <!-- Cột Trái: Khu vực Mô phỏng chính -->
+        <div class="main-sim-area">
+            <div class="card" style="padding: 15px;">
+                <div class="card-title">🔬 Màn hình Quan sát: Sự lan truyền trạng thái NÉN - GIÃN</div>
+                
+                <div class="canvas-wrapper">
+                    <canvas id="waveCanvas" width="900" height="450"></canvas>
+                </div>
+                
+                <label class="toggle-switch">
+                    <input type="checkbox" id="showVectors" onchange="draw()"> 
+                    Hiển thị Vector vận tốc dao động của các phần tử
+                </label>
+
+                <div class="playback-controls">
+                    <button class="btn btn-play" onclick="startSim()">▶ Bắt đầu (Start)</button>
+                    <button class="btn btn-stop" onclick="stopSim()">⏸ Tạm dừng (Stop)</button>
+                    <button class="btn btn-reset" onclick="resetSim()">↻ Đặt lại (Reset)</button>
+                </div>
+
+                <div class="mode-controls">
+                    <button class="btn btn-mode" onclick="setMode(0.5, 200)">Chế độ: Tần số THẤP</button>
+                    <button class="btn btn-mode" onclick="setMode(1.2, 120)">Chế độ: Tần số CAO</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột Phải: Bảng điều khiển & Thông số -->
+        <div class="controls-area">
+            
+            <div class="card">
+                <div class="card-title">⚙️ Điều chỉnh Thông số & Tốc độ</div>
+                
+                <!-- Thanh trượt Tốc độ mô phỏng mới -->
+                <div class="control-group" style="padding-bottom: 15px; border-bottom: 1px dashed var(--border-color);">
+                    <div class="control-header">
+                        <span class="control-label" style="color: var(--danger);">Tốc độ mô phỏng (Slow motion)</span>
+                        <span class="control-value" style="background: var(--danger);" id="valSpeed">1.0x</span>
+                    </div>
+                    <input type="range" id="inputSpeed" min="0.1" max="2.0" step="0.1" value="1.0">
+                </div>
+
+                <div class="control-group" style="margin-top: 15px;">
+                    <div class="control-header">
+                        <span class="control-label">Biên độ dao động (A)</span>
+                        <span class="control-value" id="valA">15 px</span>
+                    </div>
+                    <input type="range" id="inputA" min="5" max="25" step="1" value="15">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-header">
+                        <span class="control-label">Tần số (f)</span>
+                        <span class="control-value" id="valF">0.5 Hz</span>
+                    </div>
+                    <input type="range" id="inputF" min="0.2" max="2.0" step="0.1" value="0.5">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-header">
+                        <span class="control-label">Bước sóng (λ)</span>
+                        <span class="control-value" id="valLambda">200 px</span>
+                    </div>
+                    <input type="range" id="inputLambda" min="80" max="250" step="10" value="200">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📊 Đại lượng thời gian thực</div>
+                <div class="dashboard">
+                    <div class="metric-box">
+                        <span class="metric-name">Chu kỳ (T)</span>
+                        <span class="metric-number" id="outT">2.00 s</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-name">Tốc độ truyền (v)</span>
+                        <span class="metric-number" id="outV">100 px/s</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-name">Tần số góc (ω)</span>
+                        <span class="metric-number" id="outOmega">3.14 rad/s</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📐 Phương trình toán học</div>
+                <div class="formulas-text">
+                    v = λ × f = λ / T <br>
+                    ω = 2πf <br>
+                    k = 2π / λ <br>
+                    <span class="white">------------------</span><br>
+                    <span class="white">Phương trình Li độ:</span><br>
+                    u(x₀,t) = A.cos(k.x₀ - ωt)
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Khối bên dưới: Lý thuyết & Khám phá -->
+        <div class="bottom-section">
+            <div class="card theory-box">
+                <div class="card-title" style="color: var(--success); border-bottom-color: #d1fae5;">📌 Bản chất Sóng dọc</div>
+                <ul>
+                    <li style="margin-bottom: 8px;"><b>Lưu ý cực kỳ quan trọng:</b> Hạt môi trường chỉ dao động tại chỗ, không di chuyển theo sóng dọc về cuối màn hình.</li>
+                    <li style="margin-bottom: 8px;">Thứ thực sự truyền đi trong không gian là <b>Trạng thái NÉN</b> (hạt dồn lại mật độ cao) và <b>Trạng thái GIÃN</b> (hạt thưa ra mật độ thấp).</li>
+                    <li>Đối với sóng dọc, <b>phương dao động</b> của phần tử <b>song song</b> với <b>phương truyền sóng</b>.</li>
+                </ul>
+            </div>
+
+            <div class="card question-box">
+                <div class="card-title" style="color: var(--warning); border-bottom-color: #fef3c7;">🔍 Câu hỏi Khám phá</div>
+                <ol style="padding-left: 20px;">
+                    <li style="margin-bottom: 8px;">Kéo thanh "Tốc độ mô phỏng" về mức <b>0.2x</b>. Quan sát kỹ một chấm đen bất kỳ, bạn có thấy nó chạy mãi về bên phải không hay chỉ lắc lư quanh một mốc cố định?</li>
+                    <li style="margin-bottom: 8px;">Nhìn vào khối màu đỏ (NÉN). Khối màu này di chuyển liên tục sang phải. Điều đó thể hiện bản chất gì của sóng?</li>
+                    <li>Bật "Hiển thị Vector". Hãy để ý chiều của mũi tên tại vùng đang NÉN và vùng đang GIÃN.</li>
+                </ol>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- CẤU HÌNH BIẾN ---
+        const canvas = document.getElementById('waveCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let isRunning = false;
+        let animId;
+        let lastTime = 0;
+        let t = 0; // Thời gian vật lí
+        
+        // Cấu hình vật lí
+        let A = 15;        // Biên độ (px)
+        let f = 0.5;       // Tần số (Hz)
+        let lambda = 200;  // Bước sóng (px)
+        let simSpeed = 1.0; // Tốc độ chạy mô phỏng
+        
+        // Các biến dẫn xuất
+        let omega = 0;
+        let k = 0;
+        let T = 0;
+        let v_wave = 0;
+
+        // Cấu hình hiển thị không gian
+        const NUM_PARTICLES = 60;
+        const SPACING = 14;      // Khoảng cách giữa các Vị Trí Cân Bằng
+        const START_X = 30;      // Lề trái
+        const PARTICLE_Y = 140;  // Vị trí trục y của hàng hạt
+        const GRAPH_Y = 350;     // Vị trí trục y của đồ thị không gian
+
+        // DOM elements
+        const inputA = document.getElementById('inputA');
+        const inputF = document.getElementById('inputF');
+        const inputLambda = document.getElementById('inputLambda');
+        const inputSpeed = document.getElementById('inputSpeed');
+        const chkVectors = document.getElementById('showVectors');
+
+        // --- HÀM VẬT LÍ ---
+        function updatePhysics(dt) {
+            // Cập nhật thời gian vật lí (nhân với hệ số tua nhanh/chậm)
+            t += dt * simSpeed;
+        }
+
+        function calculateParameters() {
+            omega = 2 * Math.PI * f;
+            k = 2 * Math.PI / lambda;
+            T = 1 / f;
+            v_wave = lambda * f;
+            
+            // Cập nhật UI hiển thị số
+            document.getElementById('valA').innerText = A + " px";
+            document.getElementById('valF').innerText = f.toFixed(1) + " Hz";
+            document.getElementById('valLambda').innerText = lambda + " px";
+            document.getElementById('valSpeed').innerText = simSpeed.toFixed(1) + "x";
+            
+            document.getElementById('outT').innerText = T.toFixed(2) + " s";
+            document.getElementById('outV').innerText = v_wave.toFixed(0) + " px/s";
+            document.getElementById('outOmega').innerText = omega.toFixed(2) + " rad/s";
+        }
+
+        // --- HÀM VẼ (RENDER) ---
+        function drawArrow(x, y, length, color = '#10b981', lineWidth = 2) {
+            if(Math.abs(length) < 1) return;
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = lineWidth;
+            
+            // Thân
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + length, y);
+            ctx.stroke();
+            
+            // Đầu mũi
+            ctx.beginPath();
+            let headLen = 6;
+            let dir = length > 0 ? 1 : -1;
+            ctx.moveTo(x + length, y);
+            ctx.lineTo(x + length - dir*headLen, y - 4);
+            ctx.lineTo(x + length - dir*headLen, y + 4);
+            ctx.fill();
+            ctx.lineWidth = 1;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // -------------------------------------------------------------
+            // 1. VẼ CÁC VÙNG NÉN & GIÃN (DI CHUYỂN ĐỘNG THEO THỜI GIAN)
+            // Phương trình li độ: u = A.cos(kx - wt)
+            // Mật độ cực đại (NÉN) khi đạo hàm li độ theo không gian (du/dx) cực tiểu
+            // => sin(kx - wt) = 1 => kx - wt = PI/2 + m*2*PI
+            // Mật độ cực tiểu (GIÃN) khi du/dx cực đại
+            // => sin(kx - wt) = -1 => kx - wt = -PI/2 + m*2*PI
+            // -------------------------------------------------------------
+            
+            // Tính độ rộng của khối màu (khoảng 35% bước sóng để nhìn thẩm mỹ)
+            let highlightWidth = lambda * 0.35; 
+
+            for(let m = -5; m <= 15; m++) {
+                
+                // --- Xử lý vùng NÉN ---
+                let phase_nen = Math.PI / 2 + m * 2 * Math.PI;
+                // Vị trí trung tâm của vùng nén tại thời điểm t
+                let x_nen = (phase_nen + omega * t) / k; 
+                
+                // Chỉ vẽ nếu vùng này đang nằm trong khung nhìn canvas
+                if(x_nen > -highlightWidth && x_nen < canvas.width + highlightWidth) {
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.15)'; // Nền Đỏ nhạt
+                    // Vẽ lùi lại một nửa độ rộng để x_nen nằm ở chính giữa khối màu
+                    ctx.fillRect(x_nen - highlightWidth / 2, 45, highlightWidth, 160);
+                    
+                    ctx.fillStyle = '#dc2626';
+                    ctx.font = '900 14px Nunito';
+                    ctx.textAlign = 'center';
+                    // Nhãn NÉN trượt theo khối màu
+                    ctx.fillText("NÉN", x_nen, 65); 
+                }
+
+                // --- Xử lý vùng GIÃN ---
+                let phase_gian = -Math.PI / 2 + m * 2 * Math.PI;
+                // Vị trí trung tâm của vùng giãn tại thời điểm t
+                let x_gian = (phase_gian + omega * t) / k;
+                
+                if(x_gian > -highlightWidth && x_gian < canvas.width + highlightWidth) {
+                    ctx.fillStyle = 'rgba(14, 165, 233, 0.15)'; // Nền Xanh nhạt
+                    ctx.fillRect(x_gian - highlightWidth / 2, 45, highlightWidth, 160);
+                    
+                    ctx.fillStyle = '#0284c7';
+                    ctx.font = '900 14px Nunito';
+                    ctx.textAlign = 'center';
+                    // Nhãn GIÃN trượt theo khối màu
+                    ctx.fillText("GIÃN", x_gian, 65);
+                }
+            }
+
+            // -------------------------------------------------------------
+            // 2. VẼ TIÊU ĐỀ & MŨI TÊN HƯỚNG DẪN
+            // -------------------------------------------------------------
+            ctx.fillStyle = '#64748b';
+            ctx.font = 'bold 15px Nunito';
+            ctx.textAlign = 'left';
+            ctx.fillText("MÔ HÌNH HẠT MÔI TRƯỜNG (Các phần tử chỉ dao động tại chỗ)", 20, 25);
+            
+            // Hướng truyền sóng (cố định)
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillText("Phương truyền sóng", 20, 240);
+            drawArrow(170, 235, 80, '#f59e0b', 3);
+            
+            // Hướng lan truyền trạng thái (chú thích thêm để làm rõ)
+            ctx.fillStyle = '#dc2626';
+            ctx.fillText("Trạng thái NÉN / GIÃN lan truyền →", 20, 265);
+
+            // Hướng dao động của hạt (cố định)
+            ctx.fillStyle = '#10b981';
+            ctx.fillText("Phương dao động của 1 phần tử", 340, 240);
+            drawArrow(565, 235, 30, '#10b981', 2);
+            drawArrow(565, 235, -30, '#10b981', 2);
+
+
+            // -------------------------------------------------------------
+            // 3. VẼ CÁC PHẦN TỬ (HẠT)
+            // -------------------------------------------------------------
+            // Đường đứt nét trục Vị Trí Cân Bằng (VTCB)
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, PARTICLE_Y);
+            ctx.lineTo(canvas.width, PARTICLE_Y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            for(let i = 0; i < NUM_PARTICLES; i++) {
+                // Tọa độ cân bằng của hạt thứ i
+                let x0 = START_X + i * SPACING;
+                
+                // Li độ tại thời điểm t
+                let u = A * Math.cos(k * x0 - omega * t);
+                
+                // Vị trí thực tế trên màn hình = VTCB + Li độ
+                let x_actual = x0 + u;
+
+                // Vẽ hạt
+                ctx.beginPath();
+                ctx.arc(x_actual, PARTICLE_Y, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = '#1e293b'; // Màu đen xám đậm
+                ctx.fill();
+
+                // Vẽ vector vận tốc nếu được check
+                if(chkVectors.checked && (i % 2 === 0)) {
+                    // v_hd = đạo hàm của u theo t = A.omega.sin(kx - wt)
+                    let v = A * omega * Math.sin(k * x0 - omega * t);
+                    // Thu nhỏ độ dài vector để không chọc vào hạt khác
+                    let vectorLen = v * 0.3; 
+                    drawArrow(x_actual, PARTICLE_Y - 15, vectorLen, '#10b981', 2);
+                }
+            }
+
+
+            // -------------------------------------------------------------
+            // 4. VẼ ĐỒ THỊ DAO ĐỘNG KHÔNG GIAN
+            // -------------------------------------------------------------
+            ctx.fillStyle = '#64748b';
+            ctx.font = 'bold 15px Nunito';
+            ctx.textAlign = 'left';
+            ctx.fillText("ĐỒ THỊ BIỂU DIỄN LI ĐỘ (u - x)", 20, 305);
+            
+            // Trục tọa độ x của đồ thị
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.beginPath();
+            ctx.moveTo(0, GRAPH_Y);
+            ctx.lineTo(canvas.width, GRAPH_Y);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '14px Nunito';
+            ctx.fillText("Vị trí cân bằng (x₀)", canvas.width - 140, GRAPH_Y + 20);
+            ctx.fillText("+A", 5, GRAPH_Y - A*2 - 5);
+            ctx.fillText("-A", 5, GRAPH_Y + A*2 + 15);
+
+            // Đường cong dạng sóng (chạy dọc không gian)
+            ctx.beginPath();
+            ctx.strokeStyle = '#0ea5e9';
+            ctx.lineWidth = 2;
+            for(let x0 = START_X; x0 < START_X + (NUM_PARTICLES-1)*SPACING; x0++) {
+                let u = A * Math.cos(k * x0 - omega * t);
+                let plotY = GRAPH_Y - u * 2; // Nhân 2 biên độ để đồ thị rõ nét hơn
+                if(x0 === START_X) ctx.moveTo(x0, plotY);
+                else ctx.lineTo(x0, plotY);
+            }
+            ctx.stroke();
+            ctx.lineWidth = 1;
+
+            // Dóng các chấm đỏ trên đồ thị
+            for(let i = 0; i < NUM_PARTICLES; i++) {
+                let x0 = START_X + i * SPACING;
+                let u = A * Math.cos(k * x0 - omega * t);
+                
+                ctx.beginPath();
+                // Tọa độ X trên đồ thị luôn là VTCB (x0), Tọa độ Y thể hiện li độ (u)
+                ctx.arc(x0, GRAPH_Y - u*2, 3, 0, 2*Math.PI);
+                ctx.fillStyle = '#ef4444';
+                ctx.fill();
+                
+                // Gióng 1 đường mờ đứt nét từ hạt đầu tiên xuống đồ thị để dễ hiểu
+                if(i === 0) {
+                    ctx.beginPath();
+                    ctx.setLineDash([3,3]);
+                    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+                    ctx.moveTo(x0, PARTICLE_Y + 10);
+                    ctx.lineTo(x0, GRAPH_Y - u*2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+        }
+
+        // --- VÒNG LẶP ANIMATION ---
+        function loop(timestamp) {
+            if(!isRunning) return;
+            
+            if (!lastTime) lastTime = timestamp;
+            let dt = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            updatePhysics(dt);
+            draw();
+
+            animId = requestAnimationFrame(loop);
+        }
+
+        // --- ĐIỀU KHIỂN NÚT & SLIDER ---
+        function startSim() {
+            if (!isRunning) {
+                isRunning = true;
+                lastTime = 0;
+                animId = requestAnimationFrame(loop);
+            }
+        }
+
+        function stopSim() {
+            isRunning = false;
+            cancelAnimationFrame(animId); // Các hộp NÉN/GIÃN sẽ đứng im ngay lập tức
+        }
+
+        function resetSim() {
+            stopSim();
+            t = 0; // Trả thời gian về 0 -> Đưa hạt về VTCB + Reset vị trí NÉN/GIÃN
+            readInputs();
+            draw();
+        }
+
+        function readInputs() {
+            A = parseFloat(inputA.value);
+            f = parseFloat(inputF.value);
+            lambda = parseFloat(inputLambda.value);
+            simSpeed = parseFloat(inputSpeed.value);
+            calculateParameters();
+            
+            // Vẽ lại 1 frame cập nhật ngay khi kéo slider (lúc đang STOP)
+            if(!isRunning) draw(); 
+        }
+
+        function setMode(freqVal, lambdaVal) {
+            inputF.value = freqVal;
+            inputLambda.value = lambdaVal;
+            // Tự động set tốc độ về 1.0 khi chuyển chế độ cho khách quan
+            inputSpeed.value = 1.0; 
+            resetSim();
+            startSim();
+        }
+
+        // Gắn sự kiện để cập nhật theo thời gian thực khi kéo thanh trượt
+        inputA.addEventListener('input', readInputs);
+        inputF.addEventListener('input', readInputs);
+        inputLambda.addEventListener('input', readInputs);
+        inputSpeed.addEventListener('input', readInputs);
+
+        // Khởi tạo tính toán lần đầu và vẽ tĩnh
+        readInputs();
+        draw();
+    </script>
+</body>
+</html>

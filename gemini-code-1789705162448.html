@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-width=1.0">
+    <title>Mô Phỏng Dao Động Điều Hòa - Con Lắc Lò Xo</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --border: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e2e8f0;
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .simulation-area {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background: #f1f5f9;
+            border-bottom: 2px solid var(--border);
+        }
+
+        canvas {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+
+        button {
+            padding: 10px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        button:active { transform: scale(0.95); }
+        button:hover { opacity: 0.9; }
+
+        #btnStart { background-color: var(--success); }
+        #btnStop { background-color: var(--danger); }
+        #btnReset { background-color: #64748b; }
+
+        select {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .bottom-panel {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 20px;
+            background: white;
+        }
+
+        .panel-left {
+            flex: 1;
+            min-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-right {
+            flex: 1.5;
+            min-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .control-group {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .control-group h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-size: 18px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 5px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .slider-row label {
+            width: 120px;
+            font-weight: 600;
+        }
+
+        .slider-row input[type=range] {
+            flex: 1;
+            margin: 0 15px;
+        }
+
+        .slider-row span {
+            width: 70px;
+            text-align: right;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .calc-results {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            background: #e0f2fe;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            color: #0369a1;
+            margin-top: 10px;
+        }
+
+        .formulas {
+            background: #fef9c3;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #fde047;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        .formulas h3 {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #854d0e;
+        }
+        
+        .graph-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        /* Ẩn hiện chữ cho mượt */
+        .math { font-style: italic; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        MÔ PHỎNG DAO ĐỘNG ĐIỀU HÒA - CON LẮC LÒ XO
+    </div>
+
+    <!-- Khu vực mô phỏng vật lý -->
+    <div class="simulation-area">
+        <canvas id="simCanvas" width="900" height="300"></canvas>
+    </div>
+
+    <!-- Các nút điều khiển trạng thái -->
+    <div class="controls-row">
+        <button id="btnStart">▶ START</button>
+        <button id="btnStop">⏸ STOP</button>
+        <button id="btnReset">↻ RESET</button>
+        
+        <select id="modeSelect">
+            <option value="custom">Tùy chỉnh thông số</option>
+            <option value="small">Chế độ 1: Biên độ nhỏ (A = 0.05m)</option>
+            <option value="large">Chế độ 2: Biên độ lớn (A = 0.15m)</option>
+        </select>
+    </div>
+
+    <div class="bottom-panel">
+        <!-- Bảng điều khiển thông số -->
+        <div class="panel-left">
+            <div class="control-group">
+                <h3>THÔNG SỐ HỆ THỐNG</h3>
+                
+                <div class="slider-row">
+                    <label>Khối lượng (m):</label>
+                    <input type="range" id="mSlider" min="0.1" max="2.0" step="0.1" value="1.0">
+                    <span id="mVal">1.0 kg</span>
+                </div>
+                
+                <div class="slider-row">
+                    <label>Độ cứng (k):</label>
+                    <input type="range" id="kSlider" min="10" max="200" step="5" value="40">
+                    <span id="kVal">40 N/m</span>
+                </div>
+
+                <div class="slider-row">
+                    <label>Biên độ (A):</label>
+                    <input type="range" id="aSlider" min="0.01" max="0.25" step="0.01" value="0.15">
+                    <span id="aVal">0.15 m</span>
+                </div>
+
+                <div class="slider-row">
+                    <label>Pha ban đầu (φ):</label>
+                    <input type="range" id="phiSlider" min="-3.14" max="3.14" step="0.1" value="0">
+                    <span id="phiVal">0 rad</span>
+                </div>
+
+                <div class="calc-results">
+                    <div>ω = <span id="omegaDisplay">6.32</span> rad/s</div>
+                    <div>T = <span id="tDisplay">0.99</span> s</div>
+                    <div>f = <span id="fDisplay">1.01</span> Hz</div>
+                </div>
+            </div>
+
+            <!-- Công thức hiển thị -->
+            <div class="formulas">
+                <h3>CƠ SỞ VẬT LÝ</h3>
+                <div><span class="math">x(t)</span> = A cos(ωt + φ)</div>
+                <div><span class="math">v(t)</span> = -Aω sin(ωt + φ)</div>
+                <div><span class="math">a(t)</span> = -ω²x(t)</div>
+                <hr style="border: 0; border-top: 1px dashed #ccc; margin: 8px 0;">
+                <div><span class="math">ω</span> = √(k/m); &nbsp;&nbsp; <span class="math">T</span> = 2π/ω</div>
+            </div>
+        </div>
+
+        <!-- Đồ thị x(t) -->
+        <div class="panel-right">
+            <div class="graph-title">ĐỒ THỊ LI ĐỘ - THỜI GIAN x(t)</div>
+            <canvas id="graphCanvas" width="600" height="350"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- KHỞI TẠO CANVAS ---
+    const simCanvas = document.getElementById('simCanvas');
+    const simCtx = simCanvas.getContext('2d');
+    
+    const graphCanvas = document.getElementById('graphCanvas');
+    const graphCtx = graphCanvas.getContext('2d');
+
+    // --- BIẾN TRẠNG THÁI VẬT LÝ ---
+    let m = 1.0;     // Khối lượng (kg)
+    let k = 40;      // Độ cứng (N/m)
+    let A = 0.15;    // Biên độ (m)
+    let phi = 0;     // Pha ban đầu (rad)
+    
+    let omega, T_period, f;
+    let t = 0;       // Thời gian thực mô phỏng (s)
+    
+    let currentX = 0;
+    let currentV = 0;
+    let currentA = 0;
+
+    // --- BIẾN ĐIỀU KHIỂN ---
+    let isRunning = false;
+    let lastTimestamp = 0;
+    let animationId = null;
+    let historyData = []; // Lưu trữ điểm đồ thị {t, x}
+
+    // --- HẰNG SỐ HIỂN THỊ ---
+    const PIXEL_PER_METER = 1000; // 1m = 1000px để vẽ
+    const ORIGIN_X = 450;         // Vị trí cân bằng trên Canvas
+    const GROUND_Y = 200;         // Tọa độ Y mặt sàn
+    const WALL_X = 50;            // Tọa độ X tường cố định
+    const MASS_SIZE = 50;         // Kích thước vật (vuông 50x50)
+
+    // --- LIÊN KẾT DOM ---
+    const mSlider = document.getElementById('mSlider');
+    const kSlider = document.getElementById('kSlider');
+    const aSlider = document.getElementById('aSlider');
+    const phiSlider = document.getElementById('phiSlider');
+    const modeSelect = document.getElementById('modeSelect');
+
+    const mVal = document.getElementById('mVal');
+    const kVal = document.getElementById('kVal');
+    const aVal = document.getElementById('aVal');
+    const phiVal = document.getElementById('phiVal');
+
+    const omegaDisplay = document.getElementById('omegaDisplay');
+    const tDisplay = document.getElementById('tDisplay');
+    const fDisplay = document.getElementById('fDisplay');
+
+    // --- HÀM CẬP NHẬT GIAO DIỆN & TÍNH TOÁN ---
+    function updatePhysicsParams() {
+        m = parseFloat(mSlider.value);
+        k = parseFloat(kSlider.value);
+        A = parseFloat(aSlider.value);
+        phi = parseFloat(phiSlider.value);
+
+        mVal.innerText = m.toFixed(1) + ' kg';
+        kVal.innerText = k.toFixed(1) + ' N/m';
+        aVal.innerText = A.toFixed(2) + ' m';
+        phiVal.innerText = phi.toFixed(2) + ' rad';
+
+        omega = Math.sqrt(k / m);
+        T_period = 2 * Math.PI / omega;
+        f = 1 / T_period;
+
+        omegaDisplay.innerText = omega.toFixed(2);
+        tDisplay.innerText = T_period.toFixed(2);
+        fDisplay.innerText = f.toFixed(2);
+        
+        // Nếu đang dừng, khi kéo thanh trượt sẽ tính luôn trạng thái hiện tại
+        if (!isRunning) {
+            calculateState();
+            drawAll();
+        }
+    }
+
+    function calculateState() {
+        currentX = A * Math.cos(omega * t + phi);
+        currentV = -A * omega * Math.sin(omega * t + phi);
+        currentA = -omega * omega * currentX;
+    }
+
+    // --- HÀM VẼ MÔ PHỎNG LÒ XO ---
+    function drawSimulation() {
+        simCtx.clearRect(0, 0, simCanvas.width, simCanvas.height);
+
+        // 1. Vẽ tường & sàn
+        simCtx.fillStyle = '#94a3b8';
+        simCtx.fillRect(WALL_X - 20, 50, 20, GROUND_Y - 50 + 10); // Tường
+        
+        simCtx.beginPath(); // Đường nét đứt (sàn)
+        simCtx.moveTo(WALL_X - 20, GROUND_Y + 25);
+        simCtx.lineTo(simCanvas.width - 20, GROUND_Y + 25);
+        simCtx.lineWidth = 4;
+        simCtx.strokeStyle = '#cbd5e1';
+        simCtx.stroke();
+
+        // 2. Trục tọa độ ngang
+        simCtx.beginPath();
+        simCtx.moveTo(WALL_X, GROUND_Y + 50);
+        simCtx.lineTo(simCanvas.width - 20, GROUND_Y + 50);
+        simCtx.lineWidth = 1;
+        simCtx.strokeStyle = '#000';
+        simCtx.stroke();
+        
+        // Mũi tên trục Ox
+        simCtx.beginPath();
+        simCtx.moveTo(simCanvas.width - 20, GROUND_Y + 50);
+        simCtx.lineTo(simCanvas.width - 30, GROUND_Y + 45);
+        simCtx.lineTo(simCanvas.width - 30, GROUND_Y + 55);
+        simCtx.fillStyle = '#000';
+        simCtx.fill();
+        simCtx.fillText("x", simCanvas.width - 15, GROUND_Y + 55);
+
+        // 3. Các điểm đánh dấu: -A, O, +A
+        const pxA = A * PIXEL_PER_METER;
+        const markY = GROUND_Y + 50;
+
+        simCtx.textAlign = "center";
+        simCtx.font = "14px Arial";
+        simCtx.fillStyle = "#333";
+
+        // Vị trí cân bằng O
+        simCtx.beginPath(); simCtx.arc(ORIGIN_X, markY, 3, 0, 2*Math.PI); simCtx.fill();
+        simCtx.fillText("O", ORIGIN_X, markY + 20);
+        
+        // Trục dọc đi qua O mờ mờ
+        simCtx.beginPath(); simCtx.moveTo(ORIGIN_X, GROUND_Y - 50); simCtx.lineTo(ORIGIN_X, markY);
+        simCtx.strokeStyle = "rgba(0,0,0,0.2)"; simCtx.setLineDash([5, 5]); simCtx.stroke(); simCtx.setLineDash([]);
+
+        // Biên dương +A
+        simCtx.beginPath(); simCtx.arc(ORIGIN_X + pxA, markY, 3, 0, 2*Math.PI); simCtx.fill();
+        simCtx.fillText("+A", ORIGIN_X + pxA, markY + 20);
+
+        // Biên âm -A
+        simCtx.beginPath(); simCtx.arc(ORIGIN_X - pxA, markY, 3, 0, 2*Math.PI); simCtx.fill();
+        simCtx.fillText("-A", ORIGIN_X - pxA, markY + 20);
+
+        // 4. Tính toán vị trí vật
+        const pxX = currentX * PIXEL_PER_METER;
+        const massCenterX = ORIGIN_X + pxX;
+        
+        // 5. Vẽ lò xo
+        const springStartX = WALL_X;
+        const springEndX = massCenterX - MASS_SIZE/2;
+        const coils = 20;
+        const springRadius = 15;
+        const coilWidth = (springEndX - springStartX) / coils;
+        
+        simCtx.beginPath();
+        simCtx.moveTo(springStartX, GROUND_Y);
+        for(let i=0; i<coils; i++) {
+            simCtx.lineTo(springStartX + i*coilWidth + coilWidth*0.25, GROUND_Y - springRadius);
+            simCtx.lineTo(springStartX + i*coilWidth + coilWidth*0.75, GROUND_Y + springRadius);
+        }
+        simCtx.lineTo(springEndX, GROUND_Y);
+        simCtx.lineWidth = 3;
+        simCtx.strokeStyle = '#64748b'; // Màu lò xo
+        simCtx.stroke();
+
+        // 6. Vẽ Vật nặng (Hình vuông)
+        simCtx.fillStyle = '#2563eb';
+        simCtx.shadowColor = 'rgba(0,0,0,0.3)';
+        simCtx.shadowBlur = 8;
+        simCtx.shadowOffsetY = 4;
+        simCtx.fillRect(massCenterX - MASS_SIZE/2, GROUND_Y - MASS_SIZE/2, MASS_SIZE, MASS_SIZE);
+        simCtx.shadowColor = 'transparent'; // Tắt shadow
+
+        // 7. Vẽ vector li độ (Mũi tên đỏ từ O đến vị trí khối)
+        if (Math.abs(currentX) > 0.005) { // Chỉ vẽ nếu khác 0 đáng kể
+            simCtx.beginPath();
+            simCtx.moveTo(ORIGIN_X, GROUND_Y - 40);
+            simCtx.lineTo(massCenterX, GROUND_Y - 40);
+            simCtx.lineWidth = 2;
+            simCtx.strokeStyle = '#dc2626'; // Red
+            simCtx.stroke();
+            
+            // Đầu mũi tên
+            const dir = currentX > 0 ? -1 : 1;
+            simCtx.beginPath();
+            simCtx.moveTo(massCenterX, GROUND_Y - 40);
+            simCtx.lineTo(massCenterX + dir*8, GROUND_Y - 45);
+            simCtx.lineTo(massCenterX + dir*8, GROUND_Y - 35);
+            simCtx.fillStyle = '#dc2626';
+            simCtx.fill();
+        }
+
+        // 8. In các giá trị động học (Góc trên bên phải)
+        simCtx.textAlign = "left";
+        simCtx.font = "16px monospace";
+        simCtx.fillStyle = "#1e293b";
+        simCtx.fillText(`t = ${t.toFixed(2)} s`, 20, 30);
+        simCtx.fillText(`x = ${currentX.toFixed(3)} m`, 20, 55);
+        simCtx.fillText(`v = ${currentV.toFixed(3)} m/s`, 20, 80);
+        simCtx.fillText(`a = ${currentA.toFixed(3)} m/s²`, 20, 105);
+    }
+
+    // --- HÀM VẼ ĐỒ THỊ ---
+    function drawGraph() {
+        graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+        
+        const w = graphCanvas.width;
+        const h = graphCanvas.height;
+        const padding = 40;
+        
+        const graphW = w - padding * 2;
+        const graphH = h - padding * 2;
+        const originY = padding + graphH / 2;
+
+        // Trục thời gian (Tối đa hiển thị 10 giây trên khung)
+        const timeWindow = 10;
+        const tMin = t > timeWindow ? t - timeWindow : 0;
+        const tMax = tMin + timeWindow;
+
+        // Vẽ lưới (Grid)
+        graphCtx.strokeStyle = '#e2e8f0';
+        graphCtx.lineWidth = 1;
+        graphCtx.beginPath();
+        // Lưới ngang
+        for(let i=0; i<=4; i++) {
+            let y = padding + i * (graphH/4);
+            graphCtx.moveTo(padding, y);
+            graphCtx.lineTo(w - padding, y);
+        }
+        // Lưới dọc
+        for(let i=0; i<=10; i++) {
+            let x = padding + i * (graphW/10);
+            graphCtx.moveTo(x, padding);
+            graphCtx.lineTo(x, h - padding);
+        }
+        graphCtx.stroke();
+
+        // Vẽ các trục chính
+        graphCtx.strokeStyle = '#000';
+        graphCtx.lineWidth = 2;
+        graphCtx.beginPath();
+        // Trục X (Thời gian t)
+        graphCtx.moveTo(padding, originY);
+        graphCtx.lineTo(w - padding + 15, originY);
+        // Trục Y (Li độ x)
+        graphCtx.moveTo(padding, h - padding);
+        graphCtx.lineTo(padding, padding - 15);
+        graphCtx.stroke();
+
+        // Label trục
+        graphCtx.fillStyle = '#000';
+        graphCtx.font = '14px Arial';
+        graphCtx.textAlign = 'center';
+        graphCtx.fillText('t (s)', w - padding + 15, originY + 20);
+        graphCtx.textAlign = 'right';
+        graphCtx.fillText('x (m)', padding - 10, padding - 15);
+        
+        // Label Biên độ A lớn nhất trên trục tung (để thang đo là 0.3)
+        const maxScaleY = 0.3; 
+        graphCtx.fillText(maxScaleY, padding - 5, padding + 5);
+        graphCtx.fillText(-maxScaleY, padding - 5, h - padding + 5);
+        graphCtx.fillText("0", padding - 5, originY + 5);
+
+        // Label trục hoành (thời gian)
+        graphCtx.textAlign = 'center';
+        graphCtx.fillText(tMin.toFixed(0), padding, originY + 20);
+        graphCtx.fillText(tMax.toFixed(0), w - padding, originY + 20);
+
+        // Hàm ánh xạ điểm thực vào pixel canvas
+        function mapX(time) {
+            return padding + ((time - tMin) / timeWindow) * graphW;
+        }
+        function mapY(xValue) {
+            return originY - (xValue / maxScaleY) * (graphH / 2);
+        }
+
+        // Vẽ đường biểu diễn x(t)
+        if (historyData.length > 1) {
+            graphCtx.beginPath();
+            graphCtx.strokeStyle = '#2563eb';
+            graphCtx.lineWidth = 2;
+            
+            let started = false;
+            for (let point of historyData) {
+                if (point.t >= tMin && point.t <= tMax) {
+                    if (!started) {
+                        graphCtx.moveTo(mapX(point.t), mapY(point.x));
+                        started = true;
+                    } else {
+                        graphCtx.lineTo(mapX(point.t), mapY(point.x));
+                    }
+                }
+            }
+            graphCtx.stroke();
+        }
+
+        // Vẽ điểm hiện tại
+        if (historyData.length > 0) {
+            const currentPointX = mapX(t);
+            const currentPointY = mapY(currentX);
+            
+            // Không vẽ nếu điểm văng ra ngoài khung do logic tMin/tMax
+            if (currentPointX >= padding && currentPointX <= w - padding) {
+                graphCtx.beginPath();
+                graphCtx.arc(currentPointX, currentPointY, 5, 0, 2 * Math.PI);
+                graphCtx.fillStyle = '#dc2626'; // Đỏ
+                graphCtx.fill();
+            }
+        }
+    }
+
+    function drawAll() {
+        drawSimulation();
+        drawGraph();
+    }
+
+    // --- VÒNG LẶP ANIMATION ---
+    function loop(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        
+        if (isRunning) {
+            const deltaTime = (timestamp - lastTimestamp) / 1000; // Đổi sang giây
+            t += deltaTime;
+            calculateState();
+            
+            // Lưu lịch sử vẽ đồ thị
+            historyData.push({ t: t, x: currentX });
+            
+            // Dọn dẹp mảng để tránh tràn bộ nhớ (chỉ giữ lại khoảng 12 giây dữ liệu)
+            if (historyData.length > 0 && historyData[0].t < t - 12) {
+                historyData.shift();
+            }
+            
+            drawAll();
+        }
+        
+        lastTimestamp = timestamp;
+        animationId = requestAnimationFrame(loop);
+    }
+
+    // --- SỰ KIỆN NÚT BẤM ---
+    document.getElementById('btnStart').addEventListener('click', () => {
+        if (!isRunning) {
+            isRunning = true;
+            lastTimestamp = performance.now(); // Reset mốc time tránh giật lag do bị dừng lâu
+            if (!animationId) {
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+    });
+
+    document.getElementById('btnStop').addEventListener('click', () => {
+        isRunning = false;
+        // Vật và đồ thị dừng lại tại đúng vị trí do isRunning = false
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+        isRunning = false;
+        t = 0;
+        historyData = [];
+        updatePhysicsParams(); // Tính lại theo thông số mới nhất từ vị trí t=0
+        
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+        
+        lastTimestamp = 0;
+        drawAll(); // Vẽ lại trạng thái ban đầu
+    });
+
+    // --- SỰ KIỆN THAY ĐỔI THÔNG SỐ & CHẾ ĐỘ ---
+    const sliders = [mSlider, kSlider, aSlider, phiSlider];
+    sliders.forEach(slider => {
+        slider.addEventListener('input', () => {
+            modeSelect.value = "custom"; // Tự động đổi mode
+            updatePhysicsParams();
+        });
+    });
+
+    modeSelect.addEventListener('change', (e) => {
+        const mode = e.target.value;
+        if (mode === 'small') {
+            aSlider.value = 0.05;
+        } else if (mode === 'large') {
+            aSlider.value = 0.15;
+        }
+        updatePhysicsParams();
+    });
+
+    // --- CHẠY KHỞI TẠO BAN ĐẦU ---
+    updatePhysicsParams();
+    drawAll();
+
+</script>
+</body>
+</html>
